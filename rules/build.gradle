@@ -1,0 +1,39 @@
+apply plugin: 'java'
+apply plugin: 'kotlin'
+apply from: 'maven.gradle'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+dependencies {
+    compileOnly("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.10")
+
+    def lintVersion = "27.0.1"
+    compileOnly("com.android.tools.lint:lint-api:$lintVersion")
+    compileOnly("com.android.tools.lint:lint-checks:$lintVersion")
+}
+
+jar {
+    manifest {
+        attributes 'Manifest-Version': 1.0
+        attributes 'Lint-Registry-v2': 'com.rosberry.android.lint.rules.MyIssueRegistry'
+    }
+}
+
+defaultTasks 'assemble'
+
+/**
+ * Copies the jar file containing your lint module
+ * into the .android/lint directory in your home folder.
+ * */
+task copyLintJar(type: Copy) {
+    description = 'Copies the lint jar file into the {user.home}/.android/lint folder.'
+    from('build/libs/')
+    into(System.getProperty("user.home") + '/.android/lint')
+    include("*.jar")
+}
+
+// Runs the copyLintJar task after build has completed.
+build.finalizedBy(copyLintJar)
